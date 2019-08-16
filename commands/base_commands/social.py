@@ -3534,7 +3534,13 @@ class CmdOath(ArxPlayerCommand):
         """Executes admin_oath command"""
         targ = self.caller.char_ob
         oaths = targ.db.oaths or {}
-        target = self.caller.search(self.lhs)
+        if self.lhs:
+            try:
+                target = Organization.objects.get(name__iexact=self.lhs)
+            except Organization.DoesNotExist:
+                    target = self.caller.search(self.lhs, global_search = True)
+                    if not target:
+                        return
         if not self.rhs:
             from evennia.utils.evtable import EvTable
             self.msg("{wOaths %s has sworn:{n" % targ)
@@ -3564,10 +3570,7 @@ class CmdOath(ArxPlayerCommand):
             msg = "%s has made an oath to you.\n" % targ.key
             msg += "{wOath:{n %s " % notes
             caller = self.caller
-            targ = caller.search(self.lhslist[0])
-            if not targ:
-                return
-            targ.inform(msg, category="Oaths")
+            target.inform(msg, category="Oaths")
             return
 
 
