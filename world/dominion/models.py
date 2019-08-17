@@ -1916,7 +1916,7 @@ class Organization(InformMixin, SharedMemoryModel):
         msg += "{wWebpage{n: %s\n" % get_full_url(self.get_absolute_url())
         if not self.secret:
             msg += "\n{wLeaders of %s:\n%s\n" % (self.name, self.display_members(end=2, show_all=show_all))
-            return msg
+        return msg
 
     def display(self, viewing_member=None, display_clues=False, show_all=False):
         """Returns string display of org"""
@@ -1933,6 +1933,7 @@ class Organization(InformMixin, SharedMemoryModel):
         else:
             money = 0
             display_money = False
+
             holdings = []
         msg = self.display_public(show_all=show_all)
         if self.secret:
@@ -1943,8 +1944,8 @@ class Organization(InformMixin, SharedMemoryModel):
             start = 3
         members = self.display_members(start=start, viewing_member=viewing_member, show_all=show_all)
         if members:
-            msg = "{wMembers of %s:\n%s" % (self.name, members)
-            #msg += members
+            members = "{wMembers of %s:\n%s" % (self.name, members)
+        msg += members
         if display_money:
             msg += "\n{wMoney{n: %s" % money
             msg += "\n{wResources{n: Economic: %s, Military: %s, Social: %s" % (self.assets.economic,

@@ -385,9 +385,9 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, MagicMi
             wound_desc = "serious"
         elif 0.75 < wound <= 1.00:
             wound_desc = "severe"
-        elif 1.00 < wound < 1.5:
+        elif 1.00 < wound <= 1.5:
             wound_desc = "grievous"
-        elif 1.5 < wound < 2.0:
+        elif 1.5 < wound <= 2.0:
             wound_desc = "grave"
         else:
             wound_desc = "deathly"
