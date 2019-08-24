@@ -2046,7 +2046,7 @@ class CmdOrganization(ArxPlayerCommand):
                 member.save()
             except Member.DoesNotExist:
                 secret = org.secret
-                member = caller.Dominion.memberships.create(organization=org, secret=secret, desc="True")
+                member = caller.Dominion.memberships.create(organization=org, secret=secret, desc="")
             caller.msg("You have joined %s." % org.name)
             org.msg("%s has joined %s." % (caller, org.name))
             inform_staff("%s has joined {c%s{n." % (caller, org))
