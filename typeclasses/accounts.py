@@ -128,7 +128,7 @@ class Account(InformMixin, MsgMixins, DefaultAccount):
         self.db._last_puppet = self.char_ob or self.db._last_puppet
         super(Account, self).at_post_login(session)
         if self.tags.get("new_mail"):
-            self.msg("{y*** You have new mail. ***{n")
+            self.msg("{m*** You have new mail. ***{n")
         self.announce_informs()
         pending = self.db.pending_messages or []
         for msg in pending:
@@ -221,10 +221,10 @@ class Account(InformMixin, MsgMixins, DefaultAccount):
             self.db.mails = []
         self.db.mails.append(mail)
         if sender:
-            from_str = " from {c%s{y" % sender.capitalize()
+            from_str = " from {c%s{m" % sender.capitalize()
         else:
             from_str = ""
-        self.msg("{yYou have new mail%s. Use {w'mail %s' {yto read it.{n" % (from_str, len(self.db.mails)))
+        self.msg("{mYou have new mail%s. Use {w'mail %s' {mto read it.{n" % (from_str, len(self.db.mails)))
         self.tags.add("new_mail")
 
     def get_fancy_name(self):

@@ -355,7 +355,7 @@ class CmdRetainers(ArxPlayerCommand):
 
     Setting up your retainer to send messages can be done by giving your
     retainer the custom_messenger or discreet_messenger skills when using
-    @retainers/buyability.
+    @retainers/buyability. Only small animals can have these abilities.
 
     /delete will remove a retainer that you own forever.
     """
