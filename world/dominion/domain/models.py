@@ -249,7 +249,7 @@ class Army(SharedMemoryModel):
         if not self.general:
             return 0
         # TODO maybe look at general's command/leadership
-        return 5
+        return 20
 
     @property
     def at_capacity(self):
