@@ -30,6 +30,11 @@ class ArxRosterManager(models.Manager):
         """Gets our Incomplete roster"""
         return self.get(name="Incomplete")
 
+    @property
+    def gods(self):
+        """Gets our Incomplete roster"""
+        return self.get(name="Gods")
+
     def get_all_active_characters(self):
         """Gets a queryset of all character objects in our Active roster"""
         from evennia.objects.models import ObjectDB
@@ -52,6 +57,12 @@ class ArxRosterManager(models.Manager):
         from evennia.objects.models import ObjectDB
         return ObjectDB.objects.select_related('roster__roster').filter(
             roster__roster=self.incomplete).order_by('db_key')
+
+    def get_all_gods_characters(self):
+        """Gets a queryset of all character objects in our Incomplete roster"""
+        from evennia.objects.models import ObjectDB
+        return ObjectDB.objects.select_related('roster__roster').filter(
+            roster__roster=self.gods).order_by('db_key')
 
     @staticmethod
     def get_character(name):

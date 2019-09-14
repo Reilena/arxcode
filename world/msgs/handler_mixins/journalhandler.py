@@ -4,7 +4,8 @@ Handler for Journals
 
 from .msg_utils import get_initial_queryset, lazy_import_from_str
 from .handler_base import MsgHandlerBase
-from world.msgs.managers import WHITE_TAG, BLACK_TAG, RELATIONSHIP_TAG, q_search_text_body, q_receiver_character_name
+from world.msgs.managers import (WHITE_TAG, BLACK_TAG, RELATIONSHIP_TAG, q_search_text_body, q_receiver_character_name,
+                                 PRAYER_TAG)
 
 from server.utils.arx_utils import get_date, create_arx_message
 

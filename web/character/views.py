@@ -125,6 +125,28 @@ def journals(request, object_id):
                                                        'page_title': '%s Journals' % character.key
                                                        })
 
+def prayers(request, object_id):
+    """
+    Displays a character's prayers
+    """
+    character = get_character_from_ob(object_id)
+    user = request.user
+    show_hidden = False
+    if user.is_authenticated():
+        if user.char_ob.id == character.id or user.check_permstring("builders"):
+            show_hidden = True
+    if not show_hidden and (hasattr(character, 'roster') and
+                            character.roster.roster.name == "Unavailable"):
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+    prayer = character.messages.prayer
+
+    return render(request, 'comms/journals.html', {'character': character,
+                                                   'show_hidden': show_hidden,
+                                                   'prayer': prayer,
+                                                   'page_title': '%s Prayers' % character.key
+                                                   })
+
 API_CACHE = None
 
 

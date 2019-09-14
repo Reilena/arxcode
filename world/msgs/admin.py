@@ -11,7 +11,7 @@ from evennia.objects.admin import ObjectDBAdmin
 from evennia.help.admin import HelpEntryAdmin
 from evennia.help.models import HelpEntry
 
-from .models import Inform, Messenger, Post, Journal, Rumor
+from .models import Inform, Messenger, Post, Journal, Rumor, Prayer
 from web.character.models import Clue
 
 
@@ -109,6 +109,7 @@ admin.site.register(Messenger, MsgAdmin)
 admin.site.register(Journal, JournalAdmin)
 admin.site.register(Post, MsgAdmin)
 admin.site.register(Rumor, MsgAdmin)
+admin.site.register(Prayer, MsgAdmin)
 
 
 class ClueForCharacterInline(admin.StackedInline):

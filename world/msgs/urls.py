@@ -15,6 +15,10 @@ urlpatterns = [
     url(r'^journals/list/read/$', views.JournalListReadView.as_view(), name="list_read_journals"),
     url(r'^journals/list/api/$', views.journal_list_json, name="journal_list_json"),
 
+    url(r'^prayer/list/$', views.PrayerListView.as_view(), name="list_prayers"),
+    url(r'^prayer/list/read/$', views.PrayerListReadView.as_view(), name="list_read_prayers"),
+    url(r'^prayer/list/api/$', views.prayer_list_json, name="prayer_list_json"),
+
     url(r'^boards/$', views.board_list, name="board_list"),
     url(r'^boards/unread$', views.post_view_unread, name='post_view_unread'),
     url(r'^boards/search$', views.post_list_global_search, name='post_list_global_search'),

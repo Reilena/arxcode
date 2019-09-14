@@ -33,7 +33,7 @@ from world.dominion.models import (RPEvent, Agent, CraftingMaterialType, Craftin
                                    AssetOwner, Reputation, Member, PlotRoom,
                                    Organization, InfluenceCategory, PlotAction, PrestigeAdjustment,
                                    PrestigeCategory, PrestigeNomination)
-from world.msgs.models import Journal, Messenger
+from world.msgs.models import Journal, Messenger, Prayer
 from world.msgs.managers import reload_model_as_proxy
 from world.stats_and_skills import do_dice_check
 
@@ -380,6 +380,8 @@ class CmdFinger(ArxPlayerCommand):
                 rost = "{yInactive{n"
             elif rost == "Available":
                 rost = "{gAvailable{n"
+            elif rost == "Gods":
+                rost = "{gGods{n"
             else:
                 raise AttributeError
             roster_status += " %s" % rost
@@ -4158,3 +4160,358 @@ class CmdFavor(RewardRPToolUseMixin, ArxPlayerCommand):
             raise CommandError("They have no favor with %s." % org)
         rep.wipe_favor()
         self.msg("Favor for %s removed." % target)
+
+
+class CmdPrayer(ArxPlayerCommand):
+    """
+    prayer
+    Usage:
+        prayer/index [=<number of entries>]
+        prayer <entry number>
+        prayer/write <god>=<prayer>
+        prayer/edit <entry number>=<text>
+        prayer/delete <entry number>
+        prayer/markallread
+        prayer/favorite <entry number>
+        prayer/countweek
+
+        Nice to Have:
+        prayer <god>[=<entry number>] -- see all my prayers to a specific god
+        prayer/search =<text or tags to search for> -- Presently returning an error
+        prayer/unfavorite <character>=<entry number> -- Not currently finding players
+        prayer/dispfavorites -- Not showing favorites
+
+    This allows a character to pray to the Gods. You will only ever be able to see
+    your own prayers. The Gods will be able to see your prayers as well. When you
+    pray, the Gods are sent some mana. You are allowed to pray as many times a you
+    would like, but only your first five every week will give mana to the God you
+    prayed to.
+    Mana allows the Gods to interact with the world. Praying to them is important
+    for allowing them to be able to act.
+    """
+    key = "prayer"
+    locks = "cmd:all()"
+    aliases = ["+prayer"]
+    help_category = "Social"
+
+    def prayer_index(self, character, p_list):
+        """
+        Gets a formatted table of a character's journals
+        Args:
+            character: Character who we're getting the journals for
+            p_list: list of prayers
+        Returns:
+            String that's a formatted PrettyTable
+        """
+        num = 1
+        table = PrettyTable(["{w#{n", "{wWritten About{n", "{wDate{n", "{wUnread?{n"])
+        # fav_tag = "pid_%s_favorite" % self.caller.player_ob.id
+        for entry in p_list:
+            try:
+                event = character.messages.get_event(entry)
+                name = ", ".join(ob.key for ob in entry.db_receivers_objects.all())
+                if event and not name:
+                    name = event.name[:25]
+                # if fav_tag in entry.tags.all():
+                #    str_num = str(num) + "{w*{n"
+                # else:
+                str_num = str(num)
+                unread = "" if self.caller.player_ob in entry.receivers else "{wX{n"
+                date = character.messages.get_date_from_header(entry)
+                table.add_row([str_num, name, date, unread])
+                num += 1
+            except (AttributeError, RuntimeError, ValueError, TypeError):
+                continue
+        return str(table)
+
+    def disp_unread_prayers(self):
+        """Sends a list of all prayers the caller hasn't read to them"""
+        caller = self.caller
+        msgs = Prayer.objects.all_unread_by(self.caller.player_ob).order_by('-db_date_created')
+        msgs = [msg.id for msg in msgs]
+        if len(msgs) > 500:
+            self.msg("Truncating some matches.")
+        msgs = msgs[:500]
+        all_writers = ObjectDB.objects.filter(Q(sender_object_set__in=msgs) &
+                                              ~Q(roster__current_account=caller.roster.current_account)
+                                              ).distinct().order_by('db_key')
+        msg_list = []
+        for writer in all_writers:
+            count = writer.sender_object_set.filter(id__in=msgs).count()
+            msg_list.append("{C%s{c(%s){n" % (writer.key, count))
+        caller.msg("Writers with prayers you have not read: %s" % ", ".join(msg_list))
+
+    def disp_favorite_prayers(self):
+        """Sends a list of all the prayers the caller has favorited"""
+        caller = self.caller
+        msgs = Prayer.objects.favorites_of(caller).order_by('-db_date_created')
+        msgs = [msg.id for msg in msgs]
+        if len(msgs) > 500:
+            self.msg("Truncating some matches.")
+        msgs = msgs[:500]
+        all_writers = ObjectDB.objects.filter(Q(sender_object_set__in=msgs) &
+                                              ~Q(roster__current_account=caller.roster.current_account)
+                                              ).distinct().order_by('db_key')
+        msglist = []
+        for writer in all_writers:
+            count = writer.sender_object_set.filter(id__in=msgs).count()
+            if count:
+                msglist.append("{C%s{c(%s){n" % (writer.key, count))
+        caller.msg("Writers with prayers you have favorited: %s" % ", ".join(msglist))
+
+    def mark_all_read(self):
+        """Marks the caller as having read all journals"""
+        caller = self.caller
+        player = caller.player_ob
+        all_msgs = Prayer.objects.all_unread_by(player)
+        # we'll do a bulk create of the through-model that represents how prayers are marked as read
+        readprayermodel = Prayer.db_receivers_accounts.through
+        bulk_list = []
+        for msg in all_msgs:
+            bulk_list.append(readprayermodel(accountdb=player, msg=msg))
+            readprayermodel.objects.bulk_create(bulk_list)
+
+    def valid_god_choices(self):
+        """Defines the Gods you can pray to."""
+        return Character.objects.filter(Q(roster__roster__name="Gods"))
+
+    def func(self):
+        """Execute command."""
+        caller = self.caller
+        num = 1
+        # if no arguments, caller's prayers
+        if not self.args and not self.switches:
+            char = caller.char_ob
+            p_name = "Prayer"
+            # display caller's latest prayer entry
+            try:
+                self.msg("Number of entries in your %s: %s" % (p_name, char.messages.size()))
+                self.msg(char.messages.disp_entry_by_num(num=num, caller=char),
+                         options={'box': True})
+            except IndexError:
+                caller.msg("No prayers written yet.")
+            self.disp_unread_prayers()
+            return
+        if "dispfavorites" in self.switches or "favorites" in self.switches:
+            self.disp_favorite_prayers()
+            return
+        if "markallread" in self.switches:
+            self.mark_all_read()
+            caller.msg("All messages marked read.")
+            return
+        if "countweek" in self.switches:
+            num = caller.char_ob.messages.num_weekly_prayers
+            self.msg("You have written %s prayers this week." % num)
+            return
+        # if no switches but have args, looking up journal of a character
+        if not self.switches or 'favorite' in self.switches or 'unfavorite' in self.switches:
+            try:
+                if not self.args:
+                    char = caller.char_ob
+                    num = 1
+                else:
+                    if self.lhs.isdigit():
+                        num = int(self.lhs)
+                        char = caller.char_ob
+                    else:
+                        # search as a player to make it global
+                        char = caller.player.search(self.lhs)
+                        # get character object from player we found
+                        char = char.char_ob
+                        if not char:
+                            raise AttributeError
+                        # display their latest white journal entry of the character
+                        if not self.rhs:
+                            num = 1
+                        else:
+                            num = int(self.rhs)
+                    if num < 1:
+                        caller.msg("Prayer number must be at least 1.")
+                        return
+                prayer = char.messages.prayer
+                if "favorite" in self.switches or "unfavorite" in self.switches:
+                    try:
+                        entry = prayer[num - 1]
+                        if "favorite" in self.switches:
+                            entry.tag_favorite(caller.player_ob)
+                            self.msg("Entry added to favorites.")
+                        else:
+                            entry.untag_favorite(caller.player_ob)
+                            self.msg("Entry removed from favorites.")
+                        return
+                    except (IndexError, AttributeError, ValueError, TypeError):
+                        self.msg("No such entry to tag as a favorite.")
+                        return
+                msg = char.messages.disp_entry_by_num(num, caller=caller.player_ob)
+                # if we fail access check, we have 'False' instead of a msg
+                if msg is None:
+                    caller.msg("Empty entry.")
+                    return
+                if not msg:
+                    caller.msg("You do not have permission to read that.")
+                    return
+                caller.msg("Number of entries for {c%s{n's prayer: %s" % (char, len(prayer)))
+                caller.msg(msg, options={'box': True})
+            except AttributeError:
+                caller.msg("No player found for %s." % self.lhs)
+                return
+            except (ValueError, TypeError):
+                caller.msg("You must provide a number for an entry.")
+                return
+            except IndexError:
+                if num == 1:
+                    caller.msg("No prayers written yet.")
+                    return
+                caller.msg("You must provide a number that matches one of their entries.")
+                return
+            return
+        # creating a new prayer
+        charob = caller.char_ob
+        args = self.args
+        if not self.switches:
+            if not self.lhs and self.rhs:
+                char = charob
+                name = self.rhs.lower()
+            elif self.lhs and not self.rhs:
+                char = charob
+                name = self.lhs.lower()
+            else:
+                char = caller.search(self.lhs)
+                if not char:
+                    return
+                char = char.char_ob
+                if not char:
+                    caller.msg("No character.")
+                    return
+                name = self.rhs.lower()
+            prayer = char.messages.prayer
+            prayers = {k: prayer.get(k, []) for k in set(prayer.key())}
+            if not prayers:
+                caller.msg("No relationships found.")
+                return
+            entries = prayers.get(name, [])
+            entries = [msg for msg in entries if msg.access(caller, 'read') or 'prayer' in msg.tags.all()]
+            if not entries:
+                caller.msg("No relationship found.")
+                return
+            if self.rhs:
+                caller.msg("{wPrayer from %s to %s:{n" % (self.lhs.capitalize(), self.rhs.capitalize()))
+            else:
+                caller.msg("{wPrayer to %s:{n" % args.capitalize())
+            sep = "{w-------------------------------------------------------------------{n"
+            caller.msg(sep)
+            for msg in entries:
+                pname = "{wPrayer:{n %s\n" % "Prayer"
+                caller.msg("\n" + pname + charob.messages.disp_entry(msg), options={'box': True})
+                msg.receivers = caller
+            return
+        lhs = self.lhs
+        rhs = self.rhs
+        # lhs will be used for keys, so need to make sure always lower case
+        lhs = lhs.lower()
+        desc = rhs
+        if 'write' in self.switches:
+            try:
+                targ = Character.objects.get(db_key__iexact=lhs, roster__roster__name="Gods")
+            except Character.DoesNotExist:
+                return self.msg("No God found named %s" % lhs)
+            else:
+                if not targ:
+                    return
+                if not targ:
+                    caller.msg("No God found named %s" % lhs)
+                    return
+                jname = "prayer"
+                msg = charob.messages.add_prayer(desc, targ)
+                caller.msg("Entry added to %s:\n%s" % (jname, msg))
+                return
+        if "search" in self.switches:
+            rhs = self.rhs
+            if not rhs:
+                char = caller
+                rhs = self.args
+            else:
+                char = caller.search(self.lhs)
+                if not char:
+                    return
+                char = char.char_ob
+                if not char:
+                    caller.msg("No character found.")
+                    return
+            entries = char.messages.search_prayer(rhs)
+            if not entries:
+                caller.msg("No matches.")
+                return
+            prayer = char.char_ob.messages.prayer
+            prayer_matches = [prayer.index(entry) + 1 for entry in entries if entry in prayer]
+            caller.msg("Prayer matches: %s" % ", ".join("#%s" % str(num) for num in prayer_matches))
+        if "index" in self.switches:
+            num = 20
+            if not self.lhs:
+                char = caller
+            elif self.lhs.isdigit():
+                char = caller
+                num = int(self.lhs)
+            else:
+                try:
+                    char = caller.player.search(self.lhs).char_ob
+                except AttributeError:
+                    caller.msg("Character not found.")
+                    return
+            if self.rhs:
+                try:
+                    num = int(self.rhs)
+                except ValueError:
+                    caller.msg("Number of entries must be a number.")
+                    return
+            prayers = char.char_ob.messages.prayer
+            caller.msg("{wPrayers for {c%s{n" % char)
+            caller.msg(self.prayer_index(char.char_ob, prayers[:num]))
+            return
+        if "all" in self.switches:
+            self.disp_unread_prayers()
+            return
+        if "edit" in self.switches or "delete" in self.switches:
+            char = caller
+            prayer = char.char_ob.messages.prayer
+            delete = "delete" in self.switches
+            try:
+                num = int(self.lhs)
+                text = self.rhs
+                if num < 1 or (not text and not delete):
+                    raise ValueError
+                entry = prayer[num - 1]
+            except (TypeError, ValueError):
+                caller.msg("Must provide a prayer number and replacement text.")
+                return
+            except IndexError:
+                caller.msg("No entry by that number.")
+                return
+            now = time_now(aware=True)
+            if (now - entry.db_date_created).days > 2:
+                caller.msg("It has been too long to edit that message.")
+                return
+            old = entry.db_message
+            if "delete" in self.switches:
+                prayer.remove(entry)
+                entry.delete()
+                self.msg("Entry deleted.")
+            else:
+                entry.db_message = self.rhs
+                entry.save()
+            logpath = settings.LOG_DIR + "/prayer_changes.txt"
+            try:
+                log = open(logpath, 'a+')
+                msg = "*" * 78
+                msg += "\nPrayer Change by %s\nOld:\n%s\nNew:\n%s\n" % (caller, old, self.rhs)
+                msg += "*" * 78
+                msg += "\n\n"
+                log.write(msg)
+            except IOError:
+                import traceback
+                traceback.print_exc()
+            caller.msg("New prayer is:\n%s" % self.rhs)
+            inform_staff("%s has %s their prayer." % (caller, "deleted" if delete else "edited"))
+            return
+        caller.msg("Invalid switch.")
+        return

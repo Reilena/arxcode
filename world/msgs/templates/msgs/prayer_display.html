@@ -1,0 +1,13 @@
+{% comment "Usage" %}
+    Usage: {% include "msgs/prayer_display.html" %}
+{% endcomment %}
+{% load app_filters %}
+    <h2> Prayer to {% if obj.prayer.get_absolute_url %}
+            <a href="{{ obj.prayer.get_absolute_url }}">{{ obj.prayer.key }}</a>
+                {% else %}{{ obj.prayer.key }}{% endif %}
+    written by {% if obj.writer.get_absolute_url %}
+    <a href="{{ obj.writer.get_absolute_url }}">{{ obj.writer.key }}</a>
+        {% else %}{{ obj.writer.key }}{% endif %}</h2>
+
+<p class="newsDate"><center>{{obj.db_date_created}}({{ obj.db_header|date_from_header }})</center></p>
+<div class="well">{{obj.db_message|mush_to_html}}</div>

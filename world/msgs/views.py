@@ -16,10 +16,11 @@ from evennia.utils import ansi
 
 from commands.base_commands.bboards import get_boards
 from .forms import (JournalMarkAllReadForm, JournalWriteForm, JournalMarkOneReadForm, JournalMarkFavorite,
-                    JournalRemoveFavorite)
+                    JournalRemoveFavorite, PrayerMarkAllReadForm, PrayerWriteForm, PrayerMarkFavorite,
+                    PrayerMarkOneReadForm, PrayerRemoveFavorite)
 from server.utils.view_mixins import LimitPageMixin
 from typeclasses.bulletin_board.bboard import BBoard, Post
-from world.msgs.models import Journal
+from world.msgs.models import Journal, Prayer
 from pytz import timezone
 from server.utils.arx_utils import time_now
 from server.conf.production_settings import SERVERTZ
@@ -555,3 +556,189 @@ def post_view(request, board_id, post_id):
         'page_title': board.key + " - " + post.db_header
     }
     return render(request, 'msgs/post_view.html', context)
+
+class PrayerListView(LimitPageMixin, ListView):
+    """View for listing prayers."""
+    model = Prayer
+    template_name = 'msgs/prayer_list.html'
+    paginate_by = 20
+
+    def search_filters(self, queryset):
+        """Filters the queryset based on what's passed along in GET as search options"""
+        get = self.request.GET
+        if not get:
+            return queryset
+        senders = get.get('sender_name', "").split()
+        if senders:
+            exclude_senders = [ob[1:] for ob in senders if ob.startswith("-")]
+            senders = [ob for ob in senders if not ob.startswith("-")]
+            sender_filter = Q()
+            for sender in senders:
+                sender_filter |= Q(db_sender_objects__db_key__iexact=sender)
+            queryset = queryset.filter(sender_filter)
+            sender_filter = Q()
+            for sender in exclude_senders:
+                sender_filter |= Q(db_sender_objects__db_key__iexact=sender)
+            queryset = queryset.exclude(sender_filter)
+        receivers = get.get('receiver_name', "").split()
+        if receivers:
+            exclude_receivers = [ob[1:] for ob in receivers if ob.startswith("-")]
+            receivers = [ob for ob in receivers if not ob.startswith("-")]
+            receiver_filter = Q()
+            for receiver in receivers:
+                receiver_filter |= Q(db_receivers_objects__db_key__iexact=receiver)
+            queryset = queryset.filter(receiver_filter)
+            receiver_filter = Q()
+            for receiver in exclude_receivers:
+                receiver_filter |= Q(db_receivers_objects__db_key__iexact=receiver)
+            queryset = queryset.exclude(receiver_filter)
+        text = get.get('search_text', None)
+        if text:
+            queryset = queryset.filter(db_message__icontains=text)
+        if self.request.user and self.request.user.is_authenticated():
+            favtag = "pid_%s_favorite" % self.request.user.id
+            favorites = get.get('favorites', None)
+            if favorites:
+                queryset = queryset.filter(db_tags__db_key=favtag)
+        return queryset
+
+    def get_queryset(self):
+        """Get queryset based on permissions. Reject outright if they're not logged in."""
+        user = self.request.user
+        if not user or not user.is_authenticated() or not user.char_ob:
+            raise PermissionDenied("You must be logged in.")
+        qs = Prayer.objects.all_permitted_prayers(user).order_by('-db_date_created')
+        return self.search_filters(qs)
+
+    def get_context_data(self, **kwargs):
+        """Gets our context - do special stuff to preserve search tags through pagination"""
+        context = super(PrayerListView, self).get_context_data(**kwargs)
+        # paginating our read prayers as well as unread
+        search_tags = ""
+        sender = self.request.GET.get('sender_name', None)
+        if sender:
+            search_tags += "&sender_name=%s" % sender
+        receiver = self.request.GET.get('receiver_name', None)
+        if receiver:
+            search_tags += "&receiver_name=%s" % receiver
+        search_text = self.request.GET.get('search_text', None)
+        if search_text:
+            search_tags += "&search_text=%s" % search_text
+        favorites = self.request.GET.get('favorites', None)
+        if favorites:
+            search_tags += "&favorites=True"
+        context['search_tags'] = search_tags
+        context['write_prayer_form'] = PrayerWriteForm()
+        context['page_title'] = 'Prayer'
+        if self.request.user and self.request.user.is_authenticated():
+            context['fav_tag'] = "pid_%s_favorite" % self.request.user.id
+        else:
+            context['fav_tag'] = None
+        return context
+
+    # noinspection PyUnusedLocal
+    def post(self, request, *args, **kwargs):
+        """Handle POST requests: marking prayers read or as favorites"""
+        if "mark_all_read" in request.POST:
+            form = PrayerMarkAllReadForm(request.POST)
+            if form.is_valid():
+                for msg in form.cleaned_data['choices']:
+                    msg.db_receivers_accounts.add(self.request.user)
+            else:
+                raise Http404(form.errors)
+        if "mark_one_read" in request.POST:
+            form = PrayerMarkOneReadForm(request.POST)
+            if form.is_valid():
+                msg = form.cleaned_data['choice']
+                msg.db_receivers_accounts.add(self.request.user)
+            else:
+                raise Http404(form.errors)
+        if "mark_favorite" in request.POST:
+            form = PrayerMarkFavorite(request.POST)
+            if form.is_valid():
+                form.tag_msg(self.request.user.char_ob)
+        if "remove_favorite" in request.POST:
+            form = PrayerRemoveFavorite(request.POST)
+            if form.is_valid():
+                form.untag_msg(self.request.user.char_ob)
+        if "write_prayer" in request.POST:
+            form = PrayerWriteForm(request.POST)
+            if form.is_valid():
+                # write prayer
+                form.create_prayer(self.request.user.char_ob)
+            else:
+                raise Http404(form.errors)
+        return HttpResponseRedirect(reverse('msgs:list_prayers'))
+
+
+class PrayerListReadView(PrayerListView):
+        """Version of prayer list for prayers the user has already read"""
+        template_name = 'msgs/prayer_list_read.html'
+
+        def get_queryset(self):
+            """Get queryset based on permissions. Reject outright if they're not logged in."""
+            user = self.request.user
+            if not user or not user.is_authenticated() or not user.char_ob:
+                raise PermissionDenied("You must be logged in.")
+            qs = Prayer.objects.all_permitted_prayers(user).all_read_by(user).order_by('-db_date_created')
+            return self.search_filters(qs)
+
+
+API_CACHE = None
+
+
+def prayer_list_json(request):
+        """Return json list of prayers for API request"""
+
+        def get_fullname(char):
+            """Auto-generate last names for people who don't have em. Poor bastards. Literally!"""
+            commoner_names = {
+                'Aeran': 'Oceans',
+                'Faenor': 'Snow',
+                'Duindar': 'Rivers',
+                'Thalerith': 'Sand',
+                'Lorandi': 'Stone'
+            }
+            last = commoner_names.get(char.db.fealty, "") if char.db.family == "None" else char.db.family
+            return "{0} {1}".format(char.key, last)
+
+        def get_response(entry):
+            """
+            Helper function for getting json for each object
+            Args:
+                entry (Msg): Message object
+            Returns:
+                dict to convert to json
+            """
+            try:
+                sender = entry.senders[0]
+            except IndexError:
+                sender = None
+            try:
+                target = entry.db_receivers_objects.all()[0]
+            except IndexError:
+                target = None
+            from world.msgs.messagehandler import MessageHandler
+            ic_date = MessageHandler.get_date_from_header(entry)
+            return {
+                'id': entry.id,
+                'sender': get_fullname(sender) if sender else "",
+                'target': get_fullname(target) if target else "",
+                'message': entry.db_message,
+                'ic_date': ic_date
+            }
+
+        try:
+            timestamp = request.GET.get('timestamp', 0)
+            import datetime
+            timestamp = datetime.datetime.fromtimestamp(float(timestamp))
+        except (AttributeError, ValueError, TypeError):
+            timestamp = None
+        global API_CACHE
+        if timestamp:
+            ret = map(get_response, Prayer.objects.filter(db_date_created__gt=timestamp).order_by('-db_date_created'))
+            return HttpResponse(json.dumps(ret), content_type='application/json')
+        if not API_CACHE:  # cache the list of all of them
+            ret = map(get_response, Prayer.objects.order_by('-db_date_created'))
+            API_CACHE = json.dumps(ret)
+        return HttpResponse(API_CACHE, content_type='application/json')

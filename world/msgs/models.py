@@ -5,8 +5,9 @@ from django.conf import settings
 from django.db import models
 from evennia.comms.models import Msg
 from .managers import (JournalManager, WhiteJournalManager, BlackJournalManager, MessengerManager, WHITE_TAG, BLACK_TAG,
-                       RELATIONSHIP_TAG, MESSENGER_TAG, GOSSIP_TAG, RUMOR_TAG, POST_TAG,
-                       PostManager, RumorManager, PRESERVE_TAG, TAG_CATEGORY, REVEALED_BLACK_TAG)
+                       RELATIONSHIP_TAG, MESSENGER_TAG, GOSSIP_TAG, RUMOR_TAG, POST_TAG, PostManager, RumorManager,
+                       PRESERVE_TAG, TAG_CATEGORY, REVEALED_BLACK_TAG, PRAYER_TAG,
+                        PrayerManager)
 
 
 # ------------------------------------------------------------
@@ -61,6 +62,8 @@ def get_model_from_tags(tag_list):
     """
     if WHITE_TAG in tag_list or BLACK_TAG in tag_list or RELATIONSHIP_TAG in tag_list:
         return Journal
+    if PRAYER_TAG in tag_list:
+        return Prayer
     if MESSENGER_TAG in tag_list:
         return Messenger
     if POST_TAG in tag_list:
@@ -238,6 +241,69 @@ class Journal(MarkReadMixin, Msg):
         """Whether this journal is visible to the public without an access check"""
         tags = self.tags.all()
         return WHITE_TAG in tags or REVEALED_BLACK_TAG in tags
+
+
+class Prayer(MarkReadMixin, Msg):
+    """
+    Proxy model for Msg that represents an in-game prayer written by a Character.
+    """
+
+    class Meta:
+        proxy = True
+    objects = PrayerManager()
+
+    @property
+    def writer(self):
+        """The person who wrote this prayer."""
+        try:
+            return self.senders[0]
+        except IndexError:
+            pass
+
+    @property
+    def prayer(self):
+        """Character who a prayer is written about."""
+        try:
+            return self.db_receivers_objects.all()[0]
+        except IndexError:
+            pass
+
+    def __str__(self):
+        prayer = self.prayer
+        prayer_txt = " to %s" % prayer.key
+        return "<Prayer written by %s%s>" % (self.writer, prayer_txt)
+
+    def tag_favorite(self, player):
+        """
+        Tags this prayer as a favorite by the player. We create a custom tag on the Prayer to represent that.
+        Args:
+            player: Player tagging this prayer as a favorite.
+        """
+        self.tags.add("pid_%s_favorite" % player.id)
+
+    def untag_favorite(self, player):
+        """
+        Removes tag marking this prayer as a favorite of the player if it's present.
+        Args:
+            player: Player removing this prayer as a favorite.
+        """
+        self.tags.remove("pid_%s_favorite" % player.id)
+
+    def add_prayer_locks(self):
+        """Sets the locks for prayers"""
+        try:
+            p_id = self.senders[0].player_ob.id
+            prayerlock = "read: perm(Builders) or pid(%s)." % p_id
+        except (AttributeError, IndexError):
+            prayerlock = "read: perm(Builders)"
+        self.locks.add(prayerlock)
+
+    @property
+    def is_public(self):
+        """Whether this journal is visible to the public without an access check"""
+        tags = self.tags.all()
+        return PRAYER_TAG not in tags
+
 
 
 class Messenger(MarkReadMixin, Msg):

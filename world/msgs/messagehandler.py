@@ -9,11 +9,11 @@ header field will be a list of key:value pairs, separated by
 semicolons.
 """
 
-from .handler_mixins import messengerhandler, journalhandler, msg_utils
+from .handler_mixins import messengerhandler, journalhandler, msg_utils, prayerhandler
 from web.character.models import Clue
 
 
-class MessageHandler(messengerhandler.MessengerHandler, journalhandler.JournalHandler):
+class MessageHandler(messengerhandler.MessengerHandler, prayerhandler.PrayerHandler, journalhandler.JournalHandler):
     """Handler for most messages"""
     def __init__(self, obj=None):
         """
@@ -133,6 +133,15 @@ class MessageHandler(messengerhandler.MessengerHandler, journalhandler.JournalHa
         self.num_journals = 0
         self.num_rel_updates = 0
         self.num_flashbacks = 0
+
+    @property
+    def num_weekly_prayers(self):
+        """Number of prayer-type things that count for mana"""
+        return self.num_prayers
+
+    def reset_prayer_count(self):
+        """Resetting our count of things which count for mana"""
+        self.num_prayers = 0
 
     def get_secret_display(self, secret_number, show_gm_notes=False):
         """

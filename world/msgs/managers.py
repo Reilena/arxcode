@@ -10,6 +10,7 @@ from server.utils.arx_utils import time_now
 WHITE_TAG = "white_journal"
 BLACK_TAG = "black_journal"
 REVEALED_BLACK_TAG = "revealed_black"
+PRAYER_TAG = "prayer"
 MESSENGER_TAG = "messenger"
 RELATIONSHIP_TAG = "relationship"
 GOSSIP_TAG = "gossip"
@@ -230,6 +231,9 @@ class MsgQuerySet(QuerySet):
     def relationships(self):
         return self.filter(q_msgtag(RELATIONSHIP_TAG))
 
+    def prayers(self):
+        return self.filter(q_msgtag(PRAYER_TAG))
+
     def get(self, *args, **kwargs):
         ret = super(MsgQuerySet, self).get(*args, **kwargs)
         return reload_model_as_proxy(ret)
@@ -240,6 +244,8 @@ class MsgProxyManager(MsgManager):
     black_query = q_msgtag(BLACK_TAG)
     revealed_query = q_msgtag(REVEALED_BLACK_TAG)
     all_journals_query = Q(white_query | black_query)
+    prayer_query = q_msgtag(PRAYER_TAG)
+    all_prayers_query = Q(prayer_query)
 
     def get_queryset(self):
         return MsgQuerySet(self.model)
@@ -265,6 +271,9 @@ class MsgProxyManager(MsgManager):
     def black(self):
         return self.get_queryset().black()
 
+    def prayer(self):
+        return self.get_queryset().prayers()
+
     def relationships(self):
         return self.get_queryset().relationships()
 
@@ -289,6 +298,16 @@ class JournalManager(MsgProxyManager):
         return qs.filter(self.non_recent_white_query() | Q(self.all_journals_query & q_sender_character(user.char_ob)) |
                          self.revealed_query)
 
+class PrayerManager(MsgProxyManager):
+    def get_queryset(self):
+        return super(PrayerManager, self).get_queryset().filter(self.all_prayers_query)
+
+    def all_permitted_prayers(self, user):
+        qs = self.get_queryset()
+        if user.is_staff:
+            return qs
+        # get all Prayers they have written
+        return qs.filter(self.prayer_query)
 
 class BlackJournalManager(MsgProxyManager):
     def get_queryset(self):
