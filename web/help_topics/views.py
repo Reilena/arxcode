@@ -339,7 +339,7 @@ def display_org(request, object_id):
     rank_display = 0
     show_secret = 0
     org = get_object_or_404(Organization, id=object_id)
-    if not user.is_staff:
+    if not user.is_builder:
         if org.secret:
             try:
                 if not org.members.filter(deguilded=False, player__player__id=user.id).exists():
