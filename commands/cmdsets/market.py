@@ -94,7 +94,6 @@ class CmdMarket(ArxCommand):
         market/economic <amount>
         market/social <amount>
         market/military <amount>
-
     Used to buy and sell materials at the market. Materials can be
     sold to the market for 5% of the cost. Economic resources are worth
     250 silver for buying materials. Resources cost 500 silver each.
@@ -235,7 +234,7 @@ class CmdMarket(ArxCommand):
             mat.amount -= amt
             mat.save()
             money = caller.db.currency or 0.0
-            sale = amt * material.value / 20
+            sale = amt * material.value/20
             money += sale
             caller.db.currency = money
             caller.msg("You have sold %s %s for %s silver coins." % (amt, material.name, sale))
@@ -328,10 +327,10 @@ class HaggledDeal(object):
     def display(self):
         """Returns a user-friendly string of the status of our deal"""
         msg = "{wAttempting to %s:{n %s %s.\n" % (self.transaction_type, self.amount, self.material_display)
-        noun = "Discount" if self.transaction_type == "buy" else "Markup Bonus"
-        msg += "{wCurrent %s:{n %s\n" % (noun, self.discount)
+        noun = "Discount" if self.transaction_type == "buy" else "Value to Market"
+        msg += "{wCurrent %s:{n %s percent\n" % (noun, self.discount)
         noun = "Value" if self.transaction_type == "sell" else "Cost"
-        msg += "{wSilver %s:{n %s (Base Cost Per Unit: %s)" % (noun, self.silver_value, self.base_cost)
+        msg += "{wSilver %s:{n %s (Market Cost Per Unit: %s)" % (noun, self.silver_value, self.base_cost)
         msg += "\n{wRoll Modifier:{n %s" % self.roll_bonus
         return msg
 
@@ -346,12 +345,11 @@ class HaggledDeal(object):
         """Alters the terms of our deal. Pray they do not alter it further."""
         if not self.caller.player_ob.pay_action_points(5):
             return
-        #self.noble_discovery_check()
         difficulty = randint(-15, 65) - self.roll_bonus
         clout = self.caller.social_clout
         if clout > 0:
             difficulty -= randint(0, clout)
-        roll = do_dice_check(self.caller, stat="charm", skill_list=["haggling", "haggling", "haggling", "streetwise"],
+        roll = do_dice_check(self.caller, stat="charm", skill_list=["economics", "streetwise"],
                              difficulty=difficulty)
         if roll <= self.discount_roll:
             self.caller.msg("You failed to find a better deal.\n%s" % self.display())
@@ -361,7 +359,7 @@ class HaggledDeal(object):
             self.caller.msg("You have found a better deal:\n%s" % self.display())
 
     def save(self):
-        """saves the deal in the underlying evennia attribute so progress is not lost if the server restarts"""
+        """Saves the deal in the underlying Evennia Attribute so progress is not lost if server restarts"""
         self.caller.db.haggling_deal = (self.transaction_type, self.resource_type or self.material.id,
                                         self.amount, self.discount_roll, self.roll_bonus)
 
@@ -395,7 +393,7 @@ class HaggledDeal(object):
     @property
     def base_cost(self):
         if self.resource_type:
-            cost = 25.0
+            cost = 100.0
         else:
             if self.transaction_type == "buy":
                 cost = self.material.value
@@ -455,18 +453,15 @@ class CmdHaggle(ArxCommand):
         haggle/findseller <material>[,target]=<amount>[,minimum bonus]
         haggle/accept
         haggle/decline
-
     This can buy/sell materials and resources. You must first attempt to find
     a buyer or seller for your deal. Once found, you can /roll to attempt to
     negotiate the terms of the deal with them.
-
     Both looking for a deal and negotiating the agreement costs 5 AP per
     attempt. A deal can be found for another character to do the haggling
     roll by specifying an optional target in findbuyer/findseller. If a
     minimum bonus is specified, the deal will only be sent to them if the
     search roll gets that bonus or higher, otherwise the deal is discarded.
     The maximum bonus that can be returned from a search attempt is 25.
-
     Resources can be bought or sold by specifying the type of resource as
     the 'material'.
     """
