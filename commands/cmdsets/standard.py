@@ -48,6 +48,11 @@ except Exception as err:
     traceback.print_exc()
     print("<<ERROR>>: Error encountered in loading xp commands: %s" % err)
 try:
+    from commands.base_commands import gods
+except Exception as err:
+    traceback.print_exc()
+    print("<<ERROR>>: Error encountered in loading gods commands: %s" % err)
+try:
     from commands.base_commands import maps
 except Exception as err:
     traceback.print_exc()
@@ -375,6 +380,7 @@ class StaffCmdSet(CmdSet):
         self.add(home.CmdBuildRoom())
         self.add(home.CmdManageRoom())
         self.add(CmdRoot())
+        # self.add(gods.CmdUseMana())
 
         # still pending implementation of additional details
         self.add(CmdTemplateForm())
