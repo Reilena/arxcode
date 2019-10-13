@@ -764,7 +764,7 @@ class PlotAction(AbstractAction):
                       (CANCELLED, 'Cancelled'), (PENDING_PUBLISH, 'Pending Resolution'), (PUBLISHED, 'Resolved'))
     status = models.PositiveSmallIntegerField(choices=STATUS_CHOICES, default=DRAFT)
     max_requests = 2
-    num_days = 30
+    num_days = 60
     attending_limit = 5
 
     def __str__(self):
