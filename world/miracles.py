@@ -58,13 +58,13 @@ def get_massive_cost():
 
 
 def get_miracles_cost(caller, field):
-    if field in "MINOR_MIRACLES":
+    if field in MINOR_MIRACLES:
         cost = MINOR_MIRACLES_COST
         return int(cost)
-    elif field in "MEDIUM_MIRACLES":
+    elif field in MEDIUM_MIRACLES:
         cost = MEDIUM_MIRACLES_COST
         return int(cost)
-    elif field in "MASSIVE_MIRACLES":
+    elif field in MASSIVE_MIRACLES:
         cost = MASSIVE_MIRACLES_COST
         return int(cost)
 
