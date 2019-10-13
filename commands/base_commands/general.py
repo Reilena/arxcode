@@ -1824,7 +1824,7 @@ class CmdTimeZone(ArxCommand):
                     'Asia/Tokyo',
                     'Australia/Sydney',
                     'America/Buenos_Aires',
-                    'US/Puerto_Rico',
+                    'America/Puerto_Rico',
                     'US/Alaska',
                     'US/Hawaii']
         if "list" in self.switches:

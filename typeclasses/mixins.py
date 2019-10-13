@@ -1013,7 +1013,7 @@ class LockMixins(object):
         msg = "%s is now locked." % self.key
         if caller:
             caller.msg(msg)
-        self.location.msg_contents(msg, exclude=caller)
+        self.msg_contents(msg, exclude=caller)
         # set the locked attribute of the destination of this exit, if we have one
         if self.destination and hasattr(self.destination, 'entrances') and self.destination.db.locked is False:
             entrances = [ob for ob in self.destination.entrances if ob.db.locked is False]

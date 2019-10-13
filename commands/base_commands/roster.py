@@ -508,6 +508,7 @@ class CmdAdminRoster(ArxPlayerCommand):
                 entry.character.db.weekly_posecount = 0
                 entry.character.db.sroom_posecount = 0
                 entry.character.db.pose_count = 0
+                entry.character.db.timezone = "US/Pacific"
             # set up password
             # noinspection PyBroadException
             try:
