@@ -17,7 +17,7 @@
 		<tr>
 			<td valign="top"><a href="{% url "character:view_action" character.id action.id %}">{{ action.id }}</a></td>
 			<td valign="top">{{ action.get_status_display }}</td>
-			<td valign="top">{% if action.crisis %}{{ action.crisis }}{% endif %}</td>
+			<td valign="top">{% if action.plot %}{{ action.plot }}{% endif %}</td>
 			<td valign="top">{{ action.commafied_participants }}</td>
 			<td valign="top">{{ action.public }}</td>
 		</tr>
