@@ -34,7 +34,7 @@ PLAYER_ATTRS = ("votes", 'claimed_scenelist', 'random_scenelist', 'validated_lis
                 'requested_validation', 'donated_ap', 'masked_validated_list')
 CHARACTER_ATTRS = ("currently_training", "trainer", 'scene_requests', "num_trained", "num_journals",
                    "num_rel_updates", "num_comments", "num_flashbacks", "support_cooldown", "support_points_spent",
-                   "rp_command_used", "random_rp_command_this_week")
+                   "rp_command_used", "random_rp_command_this_week", "num_prayers")
 
 
 class BulkInformCreator(object):
@@ -140,6 +140,7 @@ class WeeklyEvents(RunDateMixin, Script):
         self.count_poses()
         self.db.week += 1
         self.reset_action_points()
+        self.reset_prayer_count()
         self.inform_creator.create_and_send_informs()
         if reset:
             self.record_awarded_values()
@@ -191,6 +192,15 @@ class WeeklyEvents(RunDateMixin, Script):
                 increment = regen
             if increment:
                 ob.pay_action_points(-increment)
+
+    @staticmethod
+    def reset_prayer_count():
+        """
+        This resets the prayer counter per week.
+        """
+        qs = Account.objects.filter(roster__roster__name="Active")
+        for ob in qs:
+            ob.db.num_prayers = 0
 
     def do_investigations(self):
         """Does all the investigation events"""

@@ -1209,7 +1209,7 @@ class CmdMessenger(ArxCommand):
                     continue
                 elif not hasattr(targ, 'roster') or not targ.roster.roster:
                     can_deliver = False
-                elif targ.roster.roster.name not in ("Active", "Unavailable"):
+                elif targ.roster.roster.name not in ("Active", "Unavailable", "Gods"):
                     can_deliver = False
                 if not can_deliver:
                     self.msg("%s cannot receive messengers." % targ)
@@ -4168,30 +4168,19 @@ class CmdPrayer(ArxPlayerCommand):
     Usage:
         prayer/index [=<number of entries>]
         prayer <entry number>
-        prayer/write <god>=<prayer>
+        prayer/offer <god>=<prayer>
         prayer/edit <entry number>=<text>
         prayer/delete <entry number>
         prayer/markallread
         prayer/favorite <entry number>
         prayer/countweek
 
-        Nice to Have:
-        prayer <god>[=<entry number>] -- see all my prayers to a specific god
-        prayer/search =<text or tags to search for> -- Presently returning an error
-        prayer/unfavorite <character>=<entry number> -- Not currently finding players
-        prayer/dispfavorites -- Not showing favorites
-
     This allows a character to pray to the Gods. You will only ever be able to see
-    your own prayers. The Gods will be able to see your prayers as well. When you
-    pray, the Gods are sent some mana. You are allowed to pray as many times a you
-    would like, but only your first five every week will give mana to the God you
-    prayed to.
-    Mana allows the Gods to interact with the world. Praying to them is important
-    for allowing them to be able to act.
+    your own prayers. The Gods will be able to see your prayers as well.
     """
     key = "prayer"
     locks = "cmd:all()"
-    aliases = ["+prayer"]
+    aliases = ["+prayer", "pray"]
     help_category = "Social"
 
     def prayer_index(self, character, p_list):
@@ -4410,7 +4399,7 @@ class CmdPrayer(ArxPlayerCommand):
         # lhs will be used for keys, so need to make sure always lower case
         lhs = lhs.lower()
         desc = rhs
-        if 'write' in self.switches:
+        if 'offer' in self.switches:
             try:
                 targ = Character.objects.get(db_key__iexact=lhs, roster__roster__name="Gods")
             except Character.DoesNotExist:

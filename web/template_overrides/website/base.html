@@ -100,9 +100,7 @@
             <li><a href="/character/story/">Story</a>
             <li><a href="/dom/cal/list/">Events</a>
             <li><a href="/comms/boards/">Boards</a>
-            {% if user.is_authenticated and user.is_builder %}
             <li><a href="/comms/prayer/list/">Prayer</a>
-            {% endif %}
                     {% if user.is_authenticated and user.is_builder %}
                 <li><a href="/admin/">Admin</a></li>
                 <li><a href="/support/">Requests</a></li>

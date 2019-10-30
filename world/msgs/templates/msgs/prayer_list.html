@@ -7,7 +7,7 @@
         <li class="active"><a data-toggle="pill" href="#unreadprayers">Unread Prayers</a></li>
         {% if user.is_authenticated and user.char_ob %}
         <li><a href="{% url 'msgs:list_read_prayers' %}">Read Prayers</a></li>
-        <li> <a data-toggle="pill" href="#writeprayers">Write Prayer</a></li>
+        <li> <a data-toggle="pill" href="#writeprayers">Offer Prayer</a></li>
         {% endif %}
     </ul>
     <div class="tab-content">

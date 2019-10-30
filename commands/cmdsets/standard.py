@@ -226,7 +226,7 @@ class StateIndependentCmdSet(CmdSet):
         self.add(roster.CmdHere())
         self.add(social.CmdHangouts())
         self.add(social.CmdWhere())
-        # self.add(social.CmdPrayer())
+        self.add(social.CmdPrayer())
         self.add(social.CmdMessenger())
         self.add(social.CmdRoomHistory())
         self.add(social.CmdRoomMood())

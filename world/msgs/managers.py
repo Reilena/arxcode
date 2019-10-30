@@ -304,10 +304,10 @@ class PrayerManager(MsgProxyManager):
 
     def all_permitted_prayers(self, user):
         qs = self.get_queryset()
-        if user.is_staff:
+        if user.is_builder:
             return qs
         # get all Prayers they have written
-        return qs.filter(self.prayer_query)
+        return qs.filter(Q(self.prayer_query & q_sender_character(user.char_ob)))
 
 class BlackJournalManager(MsgProxyManager):
     def get_queryset(self):

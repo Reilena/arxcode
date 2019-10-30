@@ -125,6 +125,7 @@ def journals(request, object_id):
                                                        'page_title': '%s Journals' % character.key
                                                        })
 
+
 def prayers(request, object_id):
     """
     Displays a character's prayers
@@ -133,7 +134,7 @@ def prayers(request, object_id):
     user = request.user
     show_hidden = False
     if user.is_authenticated():
-        if user.char_ob.id == character.id or user.check_permstring("builders"):
+        if user.char_ob.id == character.id or user.check_permstring("wizards"):
             show_hidden = True
     if not show_hidden and (hasattr(character, 'roster') and
                             character.roster.roster.name == "Unavailable"):

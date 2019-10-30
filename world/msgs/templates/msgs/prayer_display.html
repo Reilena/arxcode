@@ -5,7 +5,7 @@
     <h2> Prayer to {% if obj.prayer.get_absolute_url %}
             <a href="{{ obj.prayer.get_absolute_url }}">{{ obj.prayer.key }}</a>
                 {% else %}{{ obj.prayer.key }}{% endif %}
-    written by {% if obj.writer.get_absolute_url %}
+    offered by {% if obj.writer.get_absolute_url %}
     <a href="{{ obj.writer.get_absolute_url }}">{{ obj.writer.key }}</a>
         {% else %}{{ obj.writer.key }}{% endif %}</h2>
 
