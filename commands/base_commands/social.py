@@ -1292,7 +1292,6 @@ class CmdCalendar(ArxPlayerCommand):
         @cal/uninvite <player or org name>[=<event ID>]
         @cal/roomdesc <description>[=<event ID>]
         @cal/risk <risk value>[=<event ID>]
-        @cal/plot <plot ID #>[=<event ID>]
     Admin:
         @cal/starteventearly <event ID>
         @cal/cancel <event ID>
