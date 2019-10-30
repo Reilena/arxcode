@@ -4228,7 +4228,7 @@ class CmdPrayer(ArxPlayerCommand):
         for writer in all_writers:
             count = writer.sender_object_set.filter(id__in=msgs).count()
             msg_list.append("{C%s{c(%s){n" % (writer.key, count))
-        caller.msg("Writers with prayers you have not read: %s" % ", ".join(msg_list))
+        # caller.msg("Writers with prayers you have not read: %s" % ", ".join(msg_list))
 
     def disp_favorite_prayers(self):
         """Sends a list of all the prayers the caller has favorited"""
@@ -4274,7 +4274,8 @@ class CmdPrayer(ArxPlayerCommand):
             p_name = "Prayer"
             # display caller's latest prayer entry
             try:
-                self.msg("Number of entries in your %s: %s" % (p_name, char.messages.size()))
+                self.msg("Number of prayers you have offered: %s" % char.messages.size())
+                self.msg("{gYour latest prayer:{n")
                 self.msg(char.messages.disp_entry_by_num(num=num, caller=char),
                          options={'box': True})
             except IndexError:
