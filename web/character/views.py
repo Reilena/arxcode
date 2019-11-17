@@ -73,7 +73,7 @@ def sheet(request, object_id):
         except AttributeError:
             pass
     if not show_hidden and (hasattr(character, 'roster') and
-                            character.roster.roster.name == "Unavailable"):
+                            character.roster.roster.name == "Unavailable", "Gods"):
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
     pheight = character.db.portrait_height or 480
