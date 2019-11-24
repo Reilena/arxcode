@@ -3332,6 +3332,12 @@ class CmdLanguages(ArxCommand):
                 return
             req = targ.ndb.language_requests or {}
             req[self.caller] = self.rhs
+            if self.rhs == "runic" or self.rhs == "Runic":
+                self.msg(
+                    "The runic language requires staff approval to be learned and you must have at least Intellect 4 "
+                    "and Mysticism 4.  If you qualify for it, please send a +request to staff and include the name of "
+                    "the person teaching the language to you.")
+                return
             targ.ndb.language_requests = req
             self.msg("You request that %s teach you %s." % (targ, self.rhs))
             targ.msg("{w%s has requested that you teach them %s.{n" % (self.caller, self.rhs))
