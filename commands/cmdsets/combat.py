@@ -1462,6 +1462,7 @@ class CmdHarm(ArxCommand):
     is sent only to the characters involved.
     """
     key = "@harm"
+    aliases = ["smite"]
     locks = "cmd:all()"
     help_category = "GMing"
 
@@ -1483,7 +1484,7 @@ class CmdHarm(ArxCommand):
             self.msg("Must provide at least one character = number for damage amount.")
             return
         victims = []
-        global_search = "global" in self.switches and self.caller.check_permstring("builders")
+        global_search = "global" in self.switches and self.caller.check_permstring("builders" or "gods")
         for arg in self.lhslist:
             victim = self.caller.search(arg, global_search=global_search)
             if victim:

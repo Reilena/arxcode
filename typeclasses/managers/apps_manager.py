@@ -124,7 +124,9 @@ class AppsManager(Object):
             message += "Please refer to the following message for context - it may be just that the GMs "
             message += "feel more information is needed in an application, or that they feel your take on "
             message += "a character's story might be more suited to a different character, possibly an original "
-            message += "one of your own creation.\n\n"
+            message += "one of your own creation. As a note, this email address is not often checked, if you"
+            message += "would like to discuss this ruling with someone on staff, please log in to a guest account"
+            message += "and ask to speak to staff from the guest channel.\n\n"
             if not gm_notes:
                 caller.msg("GM Notes are required in app denial.")
                 return False

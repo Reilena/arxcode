@@ -422,7 +422,7 @@ class CmdSendVision(ArxPlayerCommand):
     """
     key = "sendvision"
     aliases = ["sendvisions", "sendclue", "giveclue"]
-    locks = "cmd:perm(sendvision) or perm(Builders)"
+    locks = "cmd:perm(gods) or perm(Builders)"
     help_category = "GMing"
 
     def func(self):
@@ -479,6 +479,7 @@ class CmdSendVision(ArxPlayerCommand):
             targ.send_or_queue_msg(header)
             targ.inform("Your character has experienced a vision. Use @sheet/visions to view it.", category="Vision")
         caller.msg("Vision added to %s: %s" % (", ".join(str(ob) for ob in targlist), msg))
+        inform_staff("{c%s{n sent a vision to {c%s{n." % (self.caller, ", ".join(str(ob) for ob in targlist)))
         return
 
 

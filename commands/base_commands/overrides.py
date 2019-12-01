@@ -1221,7 +1221,7 @@ class CmdTeleport(ArxCommand):
     is teleported to the target location. @go is an alias for @tel/goto.     """
     key = "@tel"
     aliases = "@teleport, @go"
-    locks = "cmd:perm(teleport) or perm(Builders)"
+    locks = "cmd:perm(gods) or perm(Builders)"
     help_category = "Building"
 
     def func(self):

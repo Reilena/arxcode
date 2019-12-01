@@ -306,6 +306,8 @@ class PrayerManager(MsgProxyManager):
         qs = self.get_queryset()
         if user.is_builder:
             return qs
+        if user.is_gods:
+            return qs.filter(Q(self.prayer_query & q_receiver_character(user.char_ob)))
         # get all Prayers they have written
         return qs.filter(Q(self.prayer_query & q_sender_character(user.char_ob)))
 

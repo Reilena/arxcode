@@ -598,3 +598,7 @@ class Account(InformMixin, MsgMixins, DefaultAccount):
     @property
     def is_builder(self):
         return self.check_permstring("builders")
+
+    @property
+    def is_gods(self):
+        return self.check_permstring("gods")

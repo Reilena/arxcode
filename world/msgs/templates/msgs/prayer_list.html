@@ -29,7 +29,7 @@
                     <form action="." method="post">
                     {% csrf_token %}
                     <input type="hidden" value="{{obj.id}}" name="tagged" />
-                    <button class="btn btn-primary" type="submit" name="mark_favorite">Mark prayer as favorite</button>
+                    <button class="btn btn-success" type="submit" name="mark_favorite">Mark prayer as favorite</button>
                     </form>
                     {% else %}
                     <form action="." method="post">
