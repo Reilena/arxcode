@@ -268,13 +268,14 @@ def check_break(caller=None, checking_character_creation=False):
     if passed along as args, then return True.
     """
     from evennia.server.models import ServerConfig
+    from datetime import datetime
     allow_character_creation = ServerConfig.objects.conf("allow_character_creation_on_break")
     end_date = ServerConfig.objects.conf("end_break_date")
     if checking_character_creation and allow_character_creation:
         return False
     if not end_date:
         return False
-    if end_date > time_now(aware=True):
+    if end_date > datetime.now():
         if caller:
             caller.msg("That is currently disabled due to staff break.")
             caller.msg("Staff are on break until %s." % end_date.strftime("%x %X"))

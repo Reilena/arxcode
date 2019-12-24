@@ -26,6 +26,7 @@ from world.dominion.models import Organization, RPEvent, Propriety, AssetOwner, 
 from world.dominion.plots.models import Plot, PlotAction
 from typeclasses.characters import Character
 from server.utils.arx_utils import time_now
+from server.conf.production_settings import SERVERTZ
 
 PERMISSION_HIERARCHY = [p.lower() for p in settings.PERMISSION_HIERARCHY]
 
@@ -1805,7 +1806,7 @@ class CmdAdminBreak(ArxPlayerCommand):
             self.display_break_date()
             return
         try:
-            date = datetime.strptime(self.args, "%m/%d/%y %H:%M")
+            date = datetime.strptime(self.lhs, "%m/%d/%y %H:%M")
         except ValueError:
             self.msg("Date did not match 'mm/dd/yy hh:mm' format.")
             self.msg("You entered: %s" % self.args)
