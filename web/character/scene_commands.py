@@ -36,6 +36,9 @@ class CmdFlashback(RewardRPToolUseMixin, ArxPlayerCommand):
     Partial visibility is achieved with /allow, once they have been invited
     normally. Use /invite without a name to see who has access. Use /check
     similar to @check - the result will prefix your next post.
+
+    When you conclude a flashback that has 5 or more posts in it, you and
+    those participating in the flashback will recieve 1 XP.
     """
     key = "flashback"
     aliases = ["flashbacks"]
