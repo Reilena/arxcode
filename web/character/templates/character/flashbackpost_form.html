@@ -28,13 +28,13 @@
         <a href="{% url "character:sheet" character.id %}">&laquo;&nbsp;Back to {{ character.key }}</a>
 
         {% if allow_add_post %}
-        <div id="add_post" class="dividingBorderAbove">
+       <!--- <div id="add_post" class="dividingBorderAbove">
             <form action="." method="post">
-                {% csrf_token %}
+                <!--{% csrf_token %}-->
                 <!--table class="table"-->
-                {{ form.as_p }}
+                <!--{{ form.as_p }}-->
                 <!--/table-->
-                {% if new_post_roll %}
+                <!--{% if new_post_roll %}
                 <p>Note! This will accompany your new post: {{ new_post_roll|mush_to_html }}</p>
                 {% endif %}
                 <button class="btn btn-primary" type="submit" name="add_post">Submit Post</button>
