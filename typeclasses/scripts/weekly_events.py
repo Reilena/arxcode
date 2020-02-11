@@ -575,7 +575,7 @@ class WeeklyEvents(RunDateMixin, Script):
 
         sorted_praises = sorted(praises.items(), key=lambda x: get_total_from_list(x[1]), reverse=True)
         sorted_praises = sorted_praises[:20]
-        table = EvTable("{wName{n", "{wMsg{n", border="cells", width=78)
+        table = EvTable("{wName{n", "{wAmount{n", "{wMsg{n", border="cells", width=78)
         for tup in sorted_praises:
             praise_messages = [ob.message for ob in tup[1] if ob.message]
             selected_message = ""
@@ -585,9 +585,26 @@ class WeeklyEvents(RunDateMixin, Script):
         table.reformat_column(0, width=18)
         table.reformat_column(1, width=10)
         table.reformat_column(2, width=50)
-        prestige_msg = "{wMost Praised this week{n".center(72)
+        prestige_msg = "{wMost praised this week{n".center(72)
         prestige_msg = "%s\n%s" % (prestige_msg, str(table).lstrip())
         prestige_msg += "\n\n"
+        try:
+            # sort by our prestige change amount
+            sorted_changes = sorted(total_values.items(), key=lambda x: abs(x[1]), reverse=True)
+            sorted_changes = sorted_changes[:20]
+            rank_order = list(AssetOwner.objects.filter(player__player__roster__roster__name="Active").distinct())
+            rank_order = sorted(rank_order, key=lambda x: x.prestige, reverse=True)
+            for tup in sorted_changes:
+                # get our prestige ranking compared to others
+                owner = tup[0]
+                try:
+                    rank = rank_order.index(owner) + 1
+                except ValueError:
+                    # they rostered mid-week or whatever, skip them
+                    continue
+        except (AttributeError, ValueError, TypeError):
+            import traceback
+            traceback.print_exc()
         board.bb_post(poster_obj=self, msg=prestige_msg, subject="Weekly Praises", poster_name="Praises")
         inform_staff("Praises tally complete. Posted on %s." % board)
 
