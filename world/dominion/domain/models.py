@@ -20,7 +20,7 @@ BONUS_PER_SKILL_POINT = 0.10
 # number of workers for a building to be at full production
 SERFS_PER_BUILDING = 20.0
 # population cap for housing
-BASE_WORKER_COST = 0.10
+BASE_WORKER_COST = 0
 POP_PER_HOUSING = 1000
 BASE_POP_GROWTH = 0
 DEATHS_PER_LAWLESS = 0
@@ -1017,11 +1017,11 @@ class Domain(CachedPropertiesMixin, SharedMemoryModel):
         costs = 0
         for army in self.armies.all():
             costs += army.costs
-        costs += self.worker_cost(self.mining_serfs)
-        costs += self.worker_cost(self.lumber_serfs)
-        costs += self.worker_cost(self.mill_serfs)
-        costs += self.amount_plundered
-        costs += self.liege_taxed_amt
+        #costs += self.worker_cost(self.mining_serfs)
+        #costs += self.worker_cost(self.lumber_serfs)
+        #costs += self.worker_cost(self.mill_serfs)
+        #costs += self.amount_plundered
+        #costs += self.liege_taxed_amt
         return costs
 
     def _get_liege_taxed_amt(self):

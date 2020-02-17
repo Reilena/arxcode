@@ -152,8 +152,7 @@ class WeeklyEvents(RunDateMixin, Script):
 
         for owner in AssetOwner.objects.filter(
                         Q(organization_owner__isnull=False) |
-                        (Q(player__player__roster__roster__name="Active") &
-                         Q(player__player__roster__frozen=False))).distinct():
+                        (Q(player__player__roster__roster__name="Active"))):
             try:
                 owner.do_weekly_adjustment(self.db.week, self.inform_creator)
             except Exception as err:

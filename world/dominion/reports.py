@@ -150,7 +150,7 @@ class WeeklyReport(Report):
         txt = ""
         try:
             txt += "Week %s Reports for %s\n" % (self.week, self.owner)
-            txt += "This week's income: %s\n" % self.income_change
+            txt += "This week's gross income: %s\n" % self.income_change
             if self.successful_payments:
                 txt += "Payments received: %s\n" % ", ".join(self.successful_payments)
             if self.failed_payments:
