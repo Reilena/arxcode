@@ -43,6 +43,7 @@ IN_GAME_ERRORS = False
 IDLE_TIMEOUT = -1
 MAX_CHAR_LIMIT = 8000
 DEBUG = False
+LOCKDOWN_MODE = True
 CHANNEL_COMMAND_CLASS = "commands.base_commands.channels.ArxChannelCommand"
 BASE_ROOM_TYPECLASS = "typeclasses.rooms.ArxRoom"
 DEFAULT_HOME = config("DEFAULT_HOME", default="#30")

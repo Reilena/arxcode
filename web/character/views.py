@@ -289,6 +289,11 @@ class InactiveRosterListView(IncompleteRosterListView):
     roster_name = "Inactive"
 
 
+class GodsRosterListView(RosterListView):
+    """List of characters that are not presently active but could return"""
+    roster_name = "Gods"
+
+
 def gallery(request, object_id):
     """"List photos that belong to object_id"""
     character = get_character_from_ob(object_id)

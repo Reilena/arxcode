@@ -111,7 +111,7 @@ class FlashbackCreateForm(forms.ModelForm):
         self.fields['invites'].queryset = (RosterEntry.objects.filter(Q(roster__name="Active") |
                                                                       Q(roster__name="Available") |
                                                                       Q(roster__name="Gone") |
-                                                                      Q(roster__name="Inactive") |
+                                                                      Q(roster__name="Gods") |
                                                                       Q(roster__name="Unavailable"))
                                                               .exclude(roster__id=self.owner.id)
                                                               .order_by('character__db_key'))

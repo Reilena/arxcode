@@ -191,7 +191,7 @@ class CmdAction(ActionCommandMixin, ArxPlayerCommand):
         max_actions = PlotAction.max_requests
         max_assists = PlotActionAssistant.MAX_ASSISTS
         recent_assists = self.dompc.recent_assists
-        self.msg("{wActions Remianing:{n\n"
+        self.msg("{wActions Remaining:{n\n"
                  "You are permitted {w%s{n actions and {w%s{n assists every 60 days, and have currently\n"
                  "taken {w%s{n actions and {w%s{n assists. Assists can be made instead of actions, and\n"
                  "assists over %s count toward the action cap." % (max_actions, max_assists, recent_actions.count(),

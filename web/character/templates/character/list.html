@@ -4,14 +4,14 @@
 	<div class="text-center">
 	<ul class="nav nav-pills nav-justified">
 	<li {% if roster_name == "Active" %}class="active"{% endif %}>
-		<a href="{% url 'character:active_roster' %}">Active</a></li>
+		<a href="{% url 'character:active_roster' %}">Story Characters</a></li>
 	<li {% if roster_name == "Available" %}class="active"{% endif %}>
-		<a href="{% url 'character:available_roster' %}">Available</a></li>
+		<a href="{% url 'character:available_roster' %}">Original Characters</a></li>
+    <li {% if roster_name == "Gods" %}class="active"{% endif %}>
+		<a href="{% url 'character:gods_roster' %}">Celestial Beings</a></li>
     <li {% if roster_name == "Gone" %}class="active"{% endif %}>
 		<a href="{% url 'character:gone_roster' %}">RIP</a></li>
 	{% if show_hidden %}
-	<li {% if roster_name == "Inactive" %}class="active"{% endif %}>
-		<a href="{% url 'character:inactive_roster' %}">Inactive</a></li>
 	<li {% if roster_name == "Unavailable" %}class="active"{% endif %}>
 		<a href="{% url 'character:unavailable_roster' %}">Unavailable</a></li>
 	<li {% if roster_name == "Incomplete" %}class="active"{% endif %}>

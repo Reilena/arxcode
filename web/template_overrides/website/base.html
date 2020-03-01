@@ -68,18 +68,13 @@
         </div>
         <div class="collapse navbar-collapse navbar-menubuilder">
             <ul class="nav navbar-nav">
-                <li><a href="/">Home</a>
-                </li>
-                <li><a href="/character/{% if user.is_authenticated %}active{% else %}available{% endif %}">Characters</a>
-                </li>
+                <li><a href="/">Home</a></li>
+                <li><a href="/topics/">World</a></li>
             <li class="nav-item dropdown">
                 <a class="dropdown-toggle" id="navbarDropdownMenuLink"
-                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Lore
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Kinships
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></a>
                 <div class="dropdown-menu dropdown-info" aria-labelledby="navbarDropdownMenuLink">
-                    <ul><a class="dropdown-item" href="/topics/">World</a></ul>
-                    <ul><a class="dropdown-item" href="/topics/gods/">Gods</a></ul>
-                    <ul><b class="dropdown-item">Kinships</b></ul>
                     <ul><a class="dropdown-item" href="/topics/aeran/">Aeran</a></ul>
                     <ul><a class="dropdown-item" href="/topics/duindar/">Duindar</a></ul>
                     <ul><a class="dropdown-item" href="/topics/faenor/">Faenor</a></ul>
@@ -87,7 +82,11 @@
                     <ul><a class="dropdown-item" href="/topics/thalerith/">Thalerith</a></ul>
                 </div>
             </li>
-                <li class="nav-item dropdown">
+                <li><a href="/topics/gods/">Gods</a></li>
+                <li><a href="/character/{% if user.is_authenticated %}active{% else %}available{% endif %}">Characters</a>
+                </li>
+
+                <!---<li class="nav-item dropdown">
                 <a class="dropdown-toggle" id="navbarDropdownMenuLink"
                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Help
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></a>
@@ -100,7 +99,7 @@
             <li><a href="/character/story/">Story</a>
             <li><a href="/dom/cal/list/">Events</a>
             <li><a href="/comms/boards/">Boards</a>
-            <li><a href="/comms/prayer/list/">Prayer</a>
+            <li><a href="/comms/prayer/list/">Prayer</a>--->
                     {% if user.is_authenticated and user.is_builder %}
                 <li><a href="/admin/">Admin</a></li>
                 <li><a href="/support/">Requests</a></li>
